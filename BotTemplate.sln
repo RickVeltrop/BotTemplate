@@ -1,0 +1,30 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.3.32825.248
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BotTemplate", "BotTemplate\BotTemplate.csproj", "{07D0B4F6-DC60-480A-B768-E7D3080D22E8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{7AA11150-DFF9-4EB8-A00E-2D83BC8C3B22}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{07D0B4F6-DC60-480A-B768-E7D3080D22E8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{07D0B4F6-DC60-480A-B768-E7D3080D22E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{07D0B4F6-DC60-480A-B768-E7D3080D22E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{07D0B4F6-DC60-480A-B768-E7D3080D22E8}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5882F78A-E354-4330-9755-02FD6CD9CCF3}
+	EndGlobalSection
+EndGlobal

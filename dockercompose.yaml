@@ -1,0 +1,7 @@
+version: '3'
+
+services:
+  bot:
+    build: './BotTemplate'
+    env_file: 'bot.env'
+    restart: unless-stopped
