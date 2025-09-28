@@ -2,8 +2,6 @@
 using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.EventArgs;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using NLog;
 using System.Reflection;
 
@@ -11,71 +9,65 @@ namespace BotTemplate.Services;
 
 public class CommandHandler
 {
-    private readonly Logger _logger;
-    private readonly IConfiguration _config;
-    private readonly DiscordClient _client;
-    private readonly SlashCommandsExtension SlashCmdHandler;
+    private readonly Logger logger;
+    private readonly SlashCommandsExtension slashCommandHandler;
 
-    private Task RegisterCommandCategory(Type SlashCommandClass)
+    private Task RegisterCommandCategory(Type slashCommandClass)
     {
-        var CommandsGuildProperty = SlashCommandClass.GetProperty("CommandsGuild");
-        ulong? CommandsGuild = CommandsGuildProperty?.PropertyType == typeof(ulong?) ? (ulong?)CommandsGuildProperty.GetValue(null) : null;
+        var commandsGuildProperty = slashCommandClass.GetProperty("commandsGuild");
+        ulong? commandsGuild = commandsGuildProperty?.PropertyType == typeof(ulong?) ? (ulong?)commandsGuildProperty.GetValue(null) : null;
 
-        SlashCmdHandler.RegisterCommands(SlashCommandClass, CommandsGuild);
+        slashCommandHandler.RegisterCommands(slashCommandClass, commandsGuild);
 
         return Task.CompletedTask;
     }
 
-    private Task OnSlashCmdError(SlashCommandsExtension Sender, SlashCommandErrorEventArgs Args)
+    private Task OnSlashCmdError(SlashCommandsExtension sender, SlashCommandErrorEventArgs args)
     {
-        _logger.Error($"Uncaught exception {Args.Exception.GetType().Name} in /{Args.Context.QualifiedName}: ```\n{Args.Exception}\n```");
+        logger.Error($"Uncaught exception {args.Exception.GetType().Name} in /{args.Context.QualifiedName}: ```\n{args.Exception}\n```");
 
-        Args.Context.EditResponseAsync(new DiscordWebhookBuilder().WithContent($"An uncaught exception occured while running this command."));
+        args.Context.EditResponseAsync(new DiscordWebhookBuilder().WithContent($"An uncaught exception occured while running this command."));
 
         return Task.CompletedTask;
     }
 
-    public CommandHandler(DiscordClient Client, IConfiguration Config)
+    public CommandHandler(DiscordClient client, IServiceProvider serviceProvider)
     {
-        _logger = LogManager.GetCurrentClassLogger();
-        _config = Config;
-        _client = Client;
+        logger = LogManager.GetCurrentClassLogger();
 
-        SlashCmdHandler = Client.UseSlashCommands(new SlashCommandsConfiguration
+        slashCommandHandler = client.UseSlashCommands(new SlashCommandsConfiguration
         {
-            Services = new ServiceCollection()
-            .AddSingleton(Config)
-            .BuildServiceProvider()
+            Services = serviceProvider
         });
-        SlashCmdHandler.SlashCommandErrored += OnSlashCmdError;
+        slashCommandHandler.SlashCommandErrored += OnSlashCmdError;
     }
 
     public async Task InitializeAsync()
     {
-        var Asm = Assembly.GetEntryAssembly();
-        if (Asm == null)
+        var assembly = Assembly.GetEntryAssembly();
+        if (assembly == null)
         {
-            _logger.Error("[Commands/Initialization] Could not load commands due to Assembly.GetEntryAssembly() returning a null value.");
+            logger.Error("[Commands/Initialization] Could not load commands due to Assembly.GetEntryAssembly() returning a null value.");
             return;
         }
 
-        _logger.Info("[Commands/Initialization] Loading commands");
-        var CmdCategories = Asm.GetTypes().Where(Type => Type.IsClass && typeof(ApplicationCommandModule).IsAssignableFrom(Type));
-        if (!CmdCategories.Any())
-            _logger.Warn("[Commands/Initialization] No command categories were found");
+        logger.Info("[Commands/Initialization] Loading commands");
+        var commandCategories = assembly.GetTypes().Where(Type => Type.IsClass && typeof(ApplicationCommandModule).IsAssignableFrom(Type));
+        if (!commandCategories.Any())
+            logger.Warn("[Commands/Initialization] No command categories were found");
 
-        foreach (var Category in CmdCategories)
+        foreach (var category in commandCategories)
         {
             try
             {
-                await RegisterCommandCategory(Category);
+                await RegisterCommandCategory(category);
             }
             catch (Exception ex)
             {
-                _logger.Error(ex.Message);
+                logger.Error(ex.Message);
             }
         }
 
-        _logger.Info("[Commands/Initialization] Loaded commands");
+        logger.Info("[Commands/Initialization] Loaded commands");
     }
 }

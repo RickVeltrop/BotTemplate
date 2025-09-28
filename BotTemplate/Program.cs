@@ -11,44 +11,44 @@ namespace BotTemplate;
 
 public static class Program
 {
-    private static readonly string? _token = Environment.GetEnvironmentVariable("TOKEN");
-    public static readonly IServiceProvider _serviceProvider = CreateProvider();
-    private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
+    private static readonly string? token = Environment.GetEnvironmentVariable("TOKEN");
+    public static readonly IServiceProvider serviceProvider = CreateProvider();
+    private static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
     private static LoggingConfiguration LoggerConfig()
     {
-        var _config = _serviceProvider.GetRequiredService<IConfiguration>();
+        var config = serviceProvider.GetRequiredService<IConfiguration>();
 
-        var LogConsole = new ConsoleTarget("logconsole") { Layout = _config.GetSection("ConsoleLoggerLayout").Value };
-        var LogFile = new FileTarget("logfile") { FileName = "${basedir}/logs/${shortdate}.log", Layout = _config.GetSection("FileLoggerLayout").Value };
-        //var LogDiscord = new DiscordTarget() { LogChannelID = _config.GetSection("LogChannel").Value, Layout = _config.GetSection("BotLoggerLayout").Value };
+        var logConsole = new ConsoleTarget("logconsole") { Layout = config.GetSection("ConsoleLoggerLayout").Value };
+        var logFile = new FileTarget("logfile") { FileName = "${basedir}/logs/${shortdate}.log", Layout = config.GetSection("FileLoggerLayout").Value };
+        //var logDiscord = new DiscordTarget() { LogChannelID = config.GetSection("LogChannel").Value, Layout = config.GetSection("BotLoggerLayout").Value };
 
-        var config = new LoggingConfiguration();
-        config.AddRule(LogLevel.Debug, LogLevel.Fatal, LogConsole);
-        config.AddRule(LogLevel.Trace, LogLevel.Fatal, LogFile);
-        //config.AddRule(LogLevel.Warn, LogLevel.Fatal, LogDiscord);
+        var loggerConfig = new LoggingConfiguration();
+        loggerConfig.AddRule(LogLevel.Debug, LogLevel.Fatal, logConsole);
+        loggerConfig.AddRule(LogLevel.Trace, LogLevel.Fatal, logFile);
+        //loggerConfig.AddRule(LogLevel.Warn, LogLevel.Fatal, logDiscord);
 
-        return config;
+        return loggerConfig;
     }
 
     private static IServiceProvider CreateProvider()
     {
-        var BotConfig = new DiscordConfiguration()
+        var botConfig = new DiscordConfiguration()
         {
-            Token = _token,
+            Token = token,
             TokenType = TokenType.Bot,
             Intents = DiscordIntents.AllUnprivileged | DiscordIntents.MessageContents,
             LogUnknownEvents = false
         };
 
-        var Configuration = new ConfigurationBuilder()
+        var configuration = new ConfigurationBuilder()
             .SetBasePath(Directory.GetParent(AppContext.BaseDirectory)!.FullName)
             .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
             .Build().GetSection("AppSettings");
 
         return new ServiceCollection()
-            .AddSingleton<IConfiguration>(Configuration)
-            .AddSingleton(BotConfig)
+            .AddSingleton<IConfiguration>(configuration)
+            .AddSingleton(botConfig)
             .AddSingleton<DiscordClient>()
             .AddLogging(loggingBuilder =>
             {
@@ -62,22 +62,20 @@ public static class Program
 
     public static async Task MainAsync(string[] args)
     {
-        var client = _serviceProvider.GetRequiredService<DiscordClient>();
-        var config = _serviceProvider.GetRequiredService<IConfiguration>();
-
         LogManager.Configuration = LoggerConfig();
 
+        var client = serviceProvider.GetRequiredService<DiscordClient>();
         client.Ready += OnClientConnect;
 
-        await new CommandHandler(client, config).InitializeAsync();
+        await new CommandHandler(client, serviceProvider).InitializeAsync();
         await client.ConnectAsync();
 
         await Task.Delay(-1);
     }
 
-    private static Task OnClientConnect(DiscordClient Client, DSharpPlus.EventArgs.ReadyEventArgs Args)
+    private static Task OnClientConnect(DiscordClient client, DSharpPlus.EventArgs.ReadyEventArgs args)
     {
-        _logger.Info($"Logged in as {Client.CurrentUser.Username}#{Client.CurrentUser.Discriminator}");
+        logger.Info($"Logged in as {client.CurrentUser.Username}#{client.CurrentUser.Discriminator}");
 
         return Task.CompletedTask;
     }

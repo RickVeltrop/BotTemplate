@@ -5,74 +5,74 @@ using NLog;
 
 namespace BotTemplate.Commands;
 
-[RequireUserId(0)]
+[RequireUserId(519508374581149707)]
 [SlashCommandGroup("dev", "Development commands.")]
 public class Dev : ApplicationCommandModule
 {
-    public static ulong? CommandsGuild { get; set; }
+    public static ulong? commandsGuild { get; set; }
 
-    public enum Levels
+    public enum levels
     {
         Trace, Debug, Info, Warn, Error, Fatal, Off
     };
 
-    private readonly Logger _logger;
+    private readonly Logger logger;
 
     public Dev()
     {
-        _logger = LogManager.GetCurrentClassLogger();
+        logger = LogManager.GetCurrentClassLogger();
     }
 
     [SlashCommand("log", "Send a message with specified loglevel to the logger.")]
     public async Task Log(
         InteractionContext ctx,
-        [Option("LogLevel", "The log level")] Levels lvl,
-        [Option("Message", "The log message")] string msg
+        [Option("LogLevel", "The log level")] levels lvl,
+        [Option("Message", "The log message")] string message
         )
     {
         await ctx.DeferAsync(false);
 
-        LogLevel Level = LogLevel.FromOrdinal((int)lvl);
-        _logger.Log(Level, msg);
+        LogLevel level = LogLevel.FromOrdinal((int)lvl);
+        logger.Log(level, message);
 
-        await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent($"Successfully sent {Level.Name} message {msg}!"));
+        await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent($"Successfully sent {level.Name} message {message}!"));
     }
 
     [SlashCommand("clearcommands", "Clears all the bot's commands and restarts the bot.")]
-    public async Task ClearCommands(InteractionContext ctx, [Option("GuildId", "The guild to clear the commands of.")] string GuildIdStr = "")
+    public async Task ClearCommands(InteractionContext ctx, [Option("GuildId", "The guild to clear the commands of.")] string guildIDStr = "")
     {
         await ctx.DeferAsync(false);
 
-        if (GuildIdStr == "")
+        if (guildIDStr == "")
         {
-            _logger.Info("Removing old commands");
+            logger.Info("Removing old commands");
             foreach (DiscordApplicationCommand Command in ctx.Client.GetGlobalApplicationCommandsAsync().Result)
             {
                 await ctx.Client.DeleteGlobalApplicationCommandAsync(Command.Id);
             }
         }
-        else if (GuildIdStr != "")
+        else if (guildIDStr != "")
         {
-            ulong GuildId;
-            bool Converted = ulong.TryParse(GuildIdStr, out GuildId);
+            ulong guildID;
+            bool converted = ulong.TryParse(guildIDStr, out guildID);
 
-            if (!Converted)
+            if (!converted)
             {
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent($"Failed to convert {GuildIdStr} to ulong."));
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent($"Failed to convert {guildIDStr} to ulong."));
                 return;
             }
 
-            _logger.Info($"Removing old commands from guild with ID {GuildId}");
-            foreach (DiscordApplicationCommand Command in ctx.Client.GetGuildApplicationCommandsAsync(GuildId).Result)
+            logger.Info($"Removing old commands from guild with ID {guildID}");
+            foreach (DiscordApplicationCommand Command in ctx.Client.GetGuildApplicationCommandsAsync(guildID).Result)
             {
-                await ctx.Client.DeleteGuildApplicationCommandAsync(GuildId, Command.Id);
+                await ctx.Client.DeleteGuildApplicationCommandAsync(guildID, Command.Id);
             }
         }
 
         System.Diagnostics.Process.Start(Environment.ProcessPath!);
 
-        await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent($"The bot is being restarted!"));
-        _logger.Warn($"<@{ctx.User.Id}>({ctx.User.Id}) used `/{ctx.QualifiedName}` {(GuildIdStr == "" ? "" : $"with ID `{GuildIdStr}`")}");
+        await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent($"The bot is will be restarted!"));
+        logger.Warn($"<@{ctx.User.Id}>({ctx.User.Id}) used `/{ctx.QualifiedName}` {(guildIDStr == "" ? "" : $"with ID `{guildIDStr}`")}");
 
         Environment.Exit(0);
     }
@@ -85,18 +85,18 @@ public class Dev : ApplicationCommandModule
         System.Diagnostics.Process.Start(Environment.ProcessPath!);
 
         await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent($"Restarting!"));
-        _logger.Warn($"<@{ctx.User.Id}>({ctx.User.Id}) used `/{ctx.QualifiedName}`!");
+        logger.Warn($"<@{ctx.User.Id}>({ctx.User.Id}) used `/{ctx.QualifiedName}`!");
 
         Environment.Exit(0);
     }
 
     [SlashCommand("shutdown", "Shuts down the bot.")]
-    public async Task ShutDown(InteractionContext ctx)
+    public async Task Shutdown(InteractionContext ctx)
     {
         await ctx.DeferAsync(false);
 
         await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent($"Shutting down!"));
-        _logger.Warn($"<@{ctx.User.Id}>({ctx.User.Id}) used `/{ctx.QualifiedName}`!");
+        logger.Warn($"<@{ctx.User.Id}>({ctx.User.Id}) used `/{ctx.QualifiedName}`!");
 
         Environment.Exit(0);
     }

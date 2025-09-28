@@ -8,9 +8,9 @@ namespace BotTemplate.Services;
 
 public class DiscordTarget : TargetWithLayout
 {
-    private readonly DiscordClient Client = Program._serviceProvider.GetRequiredService<DiscordClient>();
-    public string? LogChannelID { get; set; }
-    private readonly Dictionary<LogLevel, DiscordColor> LogLevelColors = new Dictionary<LogLevel, DiscordColor>()
+    private readonly DiscordClient client = Program.serviceProvider.GetRequiredService<DiscordClient>();
+    public string? logChannelID { get; set; }
+    private readonly Dictionary<LogLevel, DiscordColor> logLevelColors = new Dictionary<LogLevel, DiscordColor>()
     {
         { LogLevel.Off, DiscordColor.Gray },
         { LogLevel.Debug, DiscordColor.Gray },
@@ -21,28 +21,28 @@ public class DiscordTarget : TargetWithLayout
         { LogLevel.Fatal, DiscordColor.DarkRed },
     };
 
-    protected override void Write(LogEventInfo LogEvent)
+    protected override void Write(LogEventInfo logEvent)
     {
-        ulong ChannelID;
-        bool Converted = ulong.TryParse(LogChannelID, out ChannelID);
+        ulong channelID;
+        bool converted = ulong.TryParse(logChannelID, out channelID);
 
-        if (!Converted)
+        if (!converted)
         {
-            throw new ArgumentException($"Configuration for DiscordLogger was invalid; failed to convert {LogChannelID} to ulong.");
+            throw new ArgumentException($"Configuration for DiscordLogger was invalid; failed to convert {logChannelID} to ulong.");
         }
 
-        if (Client == null)
+        if (client == null)
         {
             throw new ArgumentException($"Configuration for DiscordLogger was invalid; failed to get DiscordClient.");
         }
 
         var Embed = new DiscordEmbedBuilder()
         {
-            Color = LogLevelColors[LogEvent.Level],
-            Title = $"{LogEvent.Level}",
-            Description = LogEvent.Message
+            Color = logLevelColors[logEvent.Level],
+            Title = $"{logEvent.Level}",
+            Description = logEvent.Message
         };
 
-        Client.GetChannelAsync(ChannelID).Result.SendMessageAsync(Embed);
+        client.GetChannelAsync(channelID).Result.SendMessageAsync(Embed);
     }
 }

@@ -4,16 +4,16 @@ namespace BotTemplate.Modals;
 
 public class RequireUserIdAttribute : SlashCheckBaseAttribute
 {
-    private readonly ulong UserId;
+    private readonly ulong userID;
 
-    public RequireUserIdAttribute(ulong userId)
+    public RequireUserIdAttribute(ulong userID)
     {
-        this.UserId = userId;
+        this.userID = userID;
     }
 
     public override async Task<bool> ExecuteChecksAsync(InteractionContext ctx)
     {
-        if (ctx.User.Id == UserId)
+        if (ctx.User.Id == userID)
             return true;
         else
             return false;
