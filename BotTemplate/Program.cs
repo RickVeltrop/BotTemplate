@@ -21,15 +21,12 @@ public static class Program
 
         var LogConsole = new ConsoleTarget("logconsole") { Layout = _config.GetSection("ConsoleLoggerLayout").Value };
         var LogFile = new FileTarget("logfile") { FileName = "${basedir}/logs/${shortdate}.log", Layout = _config.GetSection("FileLoggerLayout").Value };
-        
-        /* Uncomment if you'd like to log errors into a discord channel (set guild and channel ID in appsettings.json)
-         * var LogDiscord = new DiscordTarget() { LogChannelID = _config.GetSection("LogChannel").Value, Layout = _config.GetSection("BotLoggerLayout").Value };
-         */
+        //var LogDiscord = new DiscordTarget() { LogChannelID = _config.GetSection("LogChannel").Value, Layout = _config.GetSection("BotLoggerLayout").Value };
 
         var config = new LoggingConfiguration();
         config.AddRule(LogLevel.Debug, LogLevel.Fatal, LogConsole);
         config.AddRule(LogLevel.Trace, LogLevel.Fatal, LogFile);
-        // config.AddRule(LogLevel.Warn, LogLevel.Fatal, LogDiscord);
+        //config.AddRule(LogLevel.Warn, LogLevel.Fatal, LogDiscord);
 
         return config;
     }
@@ -65,18 +62,15 @@ public static class Program
 
     public static async Task MainAsync(string[] args)
     {
-        var _client = _serviceProvider.GetRequiredService<DiscordClient>();
-        var _config = _serviceProvider.GetRequiredService<IConfiguration>();
-
-        string Dir = _config.GetSection("MarkdownPath").Exists() ? _config.GetSection("MarkdownPath").Value! : "\\err-markdown";
-        Directory.CreateDirectory(Dir);
+        var client = _serviceProvider.GetRequiredService<DiscordClient>();
+        var config = _serviceProvider.GetRequiredService<IConfiguration>();
 
         LogManager.Configuration = LoggerConfig();
 
-        _client.Ready += OnClientConnect;
+        client.Ready += OnClientConnect;
 
-        await new CommandHandler(_client, _config).InitializeAsync();
-        await _client.ConnectAsync();
+        await new CommandHandler(client, config).InitializeAsync();
+        await client.ConnectAsync();
 
         await Task.Delay(-1);
     }
